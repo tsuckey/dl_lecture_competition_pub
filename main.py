@@ -141,7 +141,7 @@ def main(args: DictConfig):
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
     
-    current_time = time.strftime("%Y%m%d%H%M%S")
+    current_time = time.strftime("%Y%m%d-%H%M%S")
     model_path = f"checkpoints/model_{current_time}.pth"
     torch.save(model.state_dict(), model_path)
     print(f"Model saved to {model_path}")
@@ -163,7 +163,7 @@ def main(args: DictConfig):
     # ------------------
     #  save submission
     # ------------------
-    file_name = "submission"
+    file_name = "submission_"+current_time
     save_optical_flow_to_npy(flow, file_name)
 
 if __name__ == "__main__":
