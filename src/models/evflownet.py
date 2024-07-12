@@ -62,10 +62,10 @@ class EVFlowNet(nn.Module):
         inputs, flow = self.decoder4(inputs)
         flow_dict['flow3'] = flow.clone()
         
-        #print('flow0 :',flow_dict['flow0'].shape) # flow0 : torch.Size([8, 2,  60,  80])
-        #print('flow1 :',flow_dict['flow1'].shape) # flow1 : torch.Size([8, 2, 120, 160])
-        #print('flow2 :',flow_dict['flow2'].shape) # flow2 : torch.Size([8, 2, 240, 320])
-        #print('flow3 :',flow_dict['flow3'].shape) # flow3 : torch.Size([8, 2, 480, 640])
+        #print('flow0 :',flow_dict['flow0'].shape) # flow0 : torch.Size([8, 2,  60,  80]) : 1/8
+        #print('flow1 :',flow_dict['flow1'].shape) # flow1 : torch.Size([8, 2, 120, 160]) : 1/4
+        #print('flow2 :',flow_dict['flow2'].shape) # flow2 : torch.Size([8, 2, 240, 320]) : 1/2
+        #print('flow3 :',flow_dict['flow3'].shape) # flow3 : torch.Size([8, 2, 480, 640]) : 1/1
         
         return flow_dict
         

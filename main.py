@@ -14,6 +14,8 @@ from typing import Dict, Any
 import os
 import time
 
+import torch.nn as nn
+
 
 class RepresentationType(Enum):
     VOXEL = auto()
@@ -35,6 +37,39 @@ def compute_epe_error(pred_flow: torch.Tensor, gt_flow: torch.Tensor):
     '''
     epe = torch.mean(torch.mean(torch.norm(pred_flow - gt_flow, p=2, dim=1), dim=(1, 2)), dim=0)
     return epe
+
+
+def compute_epe_error2(
+    pred_flow0: torch.Tensor, 
+    pred_flow1: torch.Tensor, 
+    pred_flow2: torch.Tensor, 
+    pred_flow3: torch.Tensor, 
+    gt_flow: torch.Tensor):
+    '''
+    end-point-error (ground truthと予測値の二乗誤差)を計算
+    pred_flow: torch.Tensor, Shape: torch.Size([B, 2, 480, 640]) => 予測したオプティカルフローデータ
+    gt_flow: torch.Tensor, Shape: torch.Size([B, 2, 480, 640]) => 正解のオプティカルフローデータ
+    '''
+    
+    pf0 = nn.Upsample(scale_factor=8, mode='nearest')(pred_flow0)
+    pf1 = nn.Upsample(scale_factor=4, mode='nearest')(pred_flow1)
+    pf2 = nn.Upsample(scale_factor=2, mode='nearest')(pred_flow2)
+    pf3 = pred_flow3#nn.Upsample(scale_factor=1, mode='nearest')(pred_flow3)
+    
+    #print('pf0 :', pf0.shape)
+    #print('pf1 :', pf1.shape)
+    #print('pf2 :', pf2.shape)
+    #print('pf3 :', pf3.shape)
+    
+    epe0 = torch.mean(torch.mean(torch.norm(pf0 - gt_flow, p=2, dim=1), dim=(1, 2)), dim=0)
+    epe1 = torch.mean(torch.mean(torch.norm(pf1 - gt_flow, p=2, dim=1), dim=(1, 2)), dim=0)
+    epe2 = torch.mean(torch.mean(torch.norm(pf2 - gt_flow, p=2, dim=1), dim=(1, 2)), dim=0)
+    epe3 = torch.mean(torch.mean(torch.norm(pf3 - gt_flow, p=2, dim=1), dim=(1, 2)), dim=0)
+    
+    epe = epe0 + epe1 + epe2 + epe3
+    
+    return epe
+
 
 def save_optical_flow_to_npy(flow: torch.Tensor, file_name: str):
     '''
@@ -128,7 +163,8 @@ def main(args: DictConfig):
             event_image = batch["event_volume"].to(device) # [B, 4, 480, 640]
             ground_truth_flow = batch["flow_gt"].to(device) # [B, 2, 480, 640]
             flow_dict = model(event_image) # [B, 2, 480, 640]
-            loss: torch.Tensor = compute_epe_error(flow_dict['flow3'], ground_truth_flow)
+            #loss: torch.Tensor = compute_epe_error(flow_dict['flow3'], ground_truth_flow)
+            loss: torch.Tensor = compute_epe_error2(flow_dict['flow0'], flow_dict['flow1'], flow_dict['flow2'], flow_dict['flow3'], ground_truth_flow)
             print(f"batch {i} loss: {loss.item()}")
             optimizer.zero_grad()
             loss.backward()
