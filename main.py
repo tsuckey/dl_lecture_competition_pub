@@ -157,7 +157,7 @@ def main(args: DictConfig):
     model.train()
     for epoch in range(args.train.epochs):
         total_loss = 0
-        print("on epoch: {}".format(epoch+1))
+        print("on epoch: {} / {}".format(epoch+1, args.train.epochs))
         for i, batch in enumerate(tqdm(train_data)):
             batch: Dict[str, Any]
             event_image = batch["event_volume"].to(device) # [B, 4, 480, 640]
