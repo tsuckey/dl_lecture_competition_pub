@@ -127,8 +127,8 @@ def main(args: DictConfig):
             batch: Dict[str, Any]
             event_image = batch["event_volume"].to(device) # [B, 4, 480, 640]
             ground_truth_flow = batch["flow_gt"].to(device) # [B, 2, 480, 640]
-            flow = model(event_image) # [B, 2, 480, 640]
-            loss: torch.Tensor = compute_epe_error(flow, ground_truth_flow)
+            flow_dict = model(event_image) # [B, 2, 480, 640]
+            loss: torch.Tensor = compute_epe_error(flow_dict['flow3'], ground_truth_flow)
             print(f"batch {i} loss: {loss.item()}")
             optimizer.zero_grad()
             loss.backward()
@@ -157,8 +157,8 @@ def main(args: DictConfig):
         for batch in tqdm(test_data):
             batch: Dict[str, Any]
             event_image = batch["event_volume"].to(device)
-            batch_flow = model(event_image) # [1, 2, 480, 640]
-            flow = torch.cat((flow, batch_flow), dim=0)  # [N, 2, 480, 640]
+            batch_flow_dict = model(event_image) # [1, 2, 480, 640]
+            flow = torch.cat((flow, batch_flow_dict['flow3']), dim=0)  # [N, 2, 480, 640]
         print("test done")
     # ------------------
     #  save submission
